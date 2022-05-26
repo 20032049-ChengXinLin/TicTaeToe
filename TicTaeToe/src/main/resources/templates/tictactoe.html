@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<script src="/bootstrap/css/bootstrap.js"></script>
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<title>Tic Tac Toe</title>
+<style>
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	text-align: center;
+}
+
+hr {
+	width: 500px;
+	height: 2px;
+	background-color: black;
+}
+
+#board {
+	width: 450px;
+	height: 450px;
+	/* background-color: gray; */
+	margin: 0 auto;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.tile {
+	width: 147px;
+	height: 147px;
+	/* Text */
+	font-size: 150px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.winner {
+	background-color: lightgray;
+	color: red;
+}
+
+.horizontal-line {
+	border-bottom: 3px solid black;
+}
+
+.vertical-line {
+	border-right: 3px solid black;
+}
+</style>
+</head>
+<body>
+	<div th:replace="fragments/header"></div>
+	<h1>Tic Tac Toe</h1>
+	<hr>
+	<br>
+	<!-- 3x3 -->
+	<h3>
+		Game Id: <span th:text=${game.id}></span>
+	</h3>
+	<h3 id="Player"></h3>
+	<input id="firstPlayer" th:value=${game.firstPlayer.username} hidden>
+	<input id="SecondPlayer" th:value=${game.secondPlayer.username} hidden>
+	<input id="firstCode" th:value=${game.first_player_piece_code} hidden>
+	<input id="SecondCode" th:value=${game.second_player_piece_code} hidden>
+	<div th:if="${id == false}">
+		<form th:action="@{/tictaetoe/{id}(id=${game.id})}" method="post"
+			th:object="${Move}">
+			<input id="Broad1" th:field="*{Broad1}" onchange="this.form.submit()"
+				hidden> <input id="Broad2" th:field="*{Broad2}"
+				onchange="this.form.submit()" hidden> <input id="Broad3"
+				th:field="*{Broad3}" onchange="this.form.submit()" hidden> <input
+				id="Broad4" th:field="*{Broad4}" onchange="this.form.submit()"
+				hidden> <input id="Broad5" th:field="*{Broad5}"
+				onchange="this.form.submit()" hidden> <input id="Broad6"
+				th:field="*{Broad6}" onchange="this.form.submit()" hidden> <input
+				id="Broad7" th:field="*{Broad7}" onchange="this.form.submit()"
+				hidden> <input id="Broad8" th:field="*{Broad8}"
+				onchange="this.form.submit()" hidden> <input id="Broad9"
+				th:field="*{Broad9}" onchange="this.form.submit()" hidden> <input
+				id="winner" th:field="*{winner}" onchange="this.form.submit()"
+				hidden>
+			<button type="submit" class="btn btn-primary">Update</button>
+		</form>
+	</div>
+	<div th:if="${id == true}">
+		<form th:action="@{/tictaetoe/move/{id}(id=${Move.id})}" method="post"
+			th:object="${Move}">
+			<input id="Broad1" th:field="*{Broad1}" onchange="this.form.submit()">
+			<input id="Broad2" th:field="*{Broad2}" onchange="this.form.submit()">
+			<input id="Broad3" th:field="*{Broad3}" onchange="this.form.submit()">
+			<input id="Broad4" th:field="*{Broad4}" onchange="this.form.submit()">
+			<input id="Broad5" th:field="*{Broad5}" onchange="this.form.submit()">
+			<input id="Broad6" th:field="*{Broad6}" onchange="this.form.submit()">
+			<input id="Broad7" th:field="*{Broad7}" onchange="this.form.submit()">
+			<input id="Broad8" th:field="*{Broad8}" onchange="this.form.submit()">
+			<input id="Broad9" th:field="*{Broad9}" onchange="this.form.submit()">
+			<input id="winner" th:field="*{winner}" th:value="${winner}"
+				onchange="this.form.submit()">
+			<button type="submit">Update</button>
+		</form>
+	</div>
+	<h3 id="Player"></h3>
+	<div id="board"></div>
+	<script type="text/javascript" th:inline="javascript">
+		var Player1 = document.getElementById("firstPlayer").value;
+		var Player2 = document.getElementById("SecondPlayer").value;
+		console.log(Player1);
+		console.log(Player2);
+		var board;
+		var firstPlayer = document.getElementById("firstCode").value;
+		var secondPlayer = document.getElementById("SecondCode").value;
+		var currPlayer = firstPlayer;
+		var gameOver = false;
+		document.getElementById("Player").innerHTML = Player1 + " 's turn ";
+
+		window.onload = function() {
+			setGame();
+
+		}
+
+		function setGame() {
+			board = [ [ ' ', ' ', ' ' ], [ ' ', ' ', ' ' ], [ ' ', ' ', ' ' ] ]
+
+			for (let r = 0; r < 3; r++) {
+				for (let c = 0; c < 3; c++) {
+					let tile = document.createElement("div");
+					tile.id = r.toString() + "-" + c.toString();
+					tile.classList.add("tile");
+					if (r == 0 || r == 1) {
+						tile.classList.add("horizontal-line");
+					}
+					if (c == 0 || c == 1) {
+						tile.classList.add("vertical-line");
+					}
+					tile.innerText = "";
+					tile.addEventListener("click", setTile);
+					document.getElementById("board").appendChild(tile);
+				}
+			}
+		}
+
+		function setTile() {
+			if (gameOver) {
+				return;
+			}
+
+			let coords = this.id.split("-"); //ex) "1-2" -> ["1", "2'"]
+			let r = parseInt(coords[0]);
+			let c = parseInt(coords[1]);
+			const move = /*[[${Move}]]*/[];
+			console.log(move.broad1);
+			if (board[r][c] != ' ') {
+				//already taken spot
+				return;
+			}
+			console.log(r);
+			console.log(c);
+			board[r][c] = currPlayer; //mark the board
+			this.innerText = currPlayer; //mark the board on html
+			if (board[r][c] == board[0][0]) {
+				document.getElementById("Broad1").value = currPlayer;
+			}
+			if (board[r][c] == board[0][1]) {
+				document.getElementById("Broad2").value = currPlayer;
+			}
+			if (board[r][c] == board[0][2]) {
+				document.getElementById("Broad3").value = currPlayer;
+			}
+			if (board[r][c] == board[1][0]) {
+				document.getElementById("Broad4").value = currPlayer;
+			}
+			if (board[r][c] == board[1][1]) {
+				document.getElementById("Broad5").value = currPlayer;
+			}
+			if (board[r][c] == board[1][2]) {
+				document.getElementById("Broad6").value = currPlayer;
+			}
+			if (board[r][c] == board[2][0]) {
+				document.getElementById("Broad7").value = currPlayer;
+			}
+			if (board[r][c] == board[2][1]) {
+				document.getElementById("Broad8").value = currPlayer;
+			}
+			if (board[r][c] == board[2][2]) {
+				document.getElementById("Broad9").value = currPlayer;
+			}
+
+			//change players
+			if (currPlayer == firstPlayer) {
+				document.getElementById("Player").innerHTML = Player2
+						+ " 's turn";
+				currPlayer = secondPlayer;
+			} else {
+				document.getElementById("Player").innerHTML = Player1
+						+ " 's turn";
+				currPlayer = firstPlayer;
+			}
+			//check winner
+			checkWinner();
+		}
+
+		function checkWinner() {
+			//horizontally, check 3 rows
+			for (let r = 0; r < 3; r++) {
+				if (board[r][0] == board[r][1] && board[r][1] == board[r][2]
+						&& board[r][0] != ' ') {
+					//if we found the winning row
+					//apply the winner style to that row
+					for (let i = 0; i < 3; i++) {
+						let tile = document.getElementById(r.toString() + "-"
+								+ i.toString());
+						tile.classList.add("winner");
+					}
+					gameOver = true;
+					if (currPlayer == "X") {
+						document.getElementById("Player").innerHTML = Player1
+								+ " win ";
+						document.getElementById("winner").value = Player1;
+					} else {
+						document.getElementById("Player").innerHTML = Player2
+								+ " win ";
+						document.getElementById("winner").value = Player2;
+					}
+					return;
+				}
+			}
+
+			//vertically, check 3 columns
+			for (let c = 0; c < 3; c++) {
+				if (board[0][c] == board[1][c] && board[1][c] == board[2][c]
+						&& board[0][c] != ' ') {
+					//if we found the winning col
+					//apply the winner style to that col
+					for (let i = 0; i < 3; i++) {
+						let tile = document.getElementById(i.toString() + "-"
+								+ c.toString());
+						tile.classList.add("winner");
+					}
+					gameOver = true;
+					if (currPlayer == "X") {
+						document.getElementById("Player").innerHTML = Player1
+								+ " win ";
+						document.getElementById("winner").value = Player1;
+					} else {
+						document.getElementById("Player").innerHTML = Player2
+								+ " win ";
+						document.getElementById("winner").value = Player2;
+					}
+					return;
+				}
+			}
+
+			//diagonally
+			if (board[0][0] == board[1][1] && board[1][1] == board[2][2]
+					&& board[0][0] != ' ') {
+				for (let i = 0; i < 3; i++) {
+					let tile = document.getElementById(i.toString() + "-"
+							+ i.toString());
+					tile.classList.add("winner");
+				}
+				gameOver = true;
+				if (currPlayer == "X") {
+					document.getElementById("Player").innerHTML = Player1
+							+ " win ";
+					document.getElementById("winner").value = Player1;
+				} else {
+					document.getElementById("Player").innerHTML = Player2
+							+ " win ";
+					document.getElementById("winner").value = Player2;
+				}
+				return;
+			}
+
+			//anti-diagonally
+			if (board[0][2] == board[1][1] && board[1][1] == board[2][0]
+					&& board[0][2] != ' ') {
+				//0-2
+				let tile = document.getElementById("0-2");
+				tile.classList.add("winner");
+
+				//1-1
+				tile = document.getElementById("1-1");
+				tile.classList.add("winner");
+
+				//2-0
+				tile = document.getElementById("2-0");
+				tile.classList.add("winner");
+				gameOver = true;
+				if (currPlayer == "X") {
+					document.getElementById("Player").innerHTML = Player1
+							+ " win ";
+					document.getElementById("winner").value = Player1;
+				} else {
+					document.getElementById("Player").innerHTML = Player2
+							+ " win ";
+					document.getElementById("winner").value = Player2;
+				}
+				return;
+			}
+		}
+	</script>
+
+</body>
+</html>

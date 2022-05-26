@@ -1,0 +1,21 @@
+<header>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="#"><span class="navbar-brand h1">Tic
+					Tae Toe</span> </a>
+			<div class="navbar-nav me-auto">
+				<a class="nav-link active" th:href="@{/}">Home</a> <a class="nav-link active" th:href="@{/winner}">Past Winners</a> <a
+					sec:authorize="!isAuthenticated()" class="nav-link" href="/login">Login</a>
+				<form sec:authorize="isAuthenticated()" th:action="@{/logout}"
+					method="post" class="">
+					<button class="btn nav-link" type="submit">Logout</button>
+				</form>
+			</div>
+		</div>
+	</nav>
+</header>
+<div sec:authorize="isAuthenticated()">
+	<h4 class="text-center">
+		Hello <span sec:authentication="principal.username"></span>!
+	</h4>
+</div>
